@@ -1,5 +1,5 @@
 from django.db import models
-
+from accounts.models import Seller, Customer
 
 class Category(models.Model):
     title = models.CharField(max_length=30)
@@ -15,17 +15,6 @@ class City(models.Model):
         return self.title
 
 
-class User(models.Model):
-    name = models.CharField(max_length=25)
-    email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=15)
-    # в принципе у юзера может быть несколько городов, реализуем потом
-    city = models.ForeignKey(City, on_delete=models.SET_NULL)
-
-    def __str__(self):
-        return self.email
-
-
 class Store(models.Model):
     title = models.CharField(max_length=50)
     address = models.CharField(max_length=200)
@@ -36,25 +25,12 @@ class Store(models.Model):
         return self.title
 
 
-class Seller(models.Model):
-    first_name = models.CharField(max_length=25)
-    middle_name = models.CharField(max_length=25)
-    last_name = models.CharField(max_length=25)
-    email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=15)
-    city = models.ForeignKey(City, on_delete=models.SET_NULL)
-
-    def __str__(self):
-        return self.email
-
-
 class Product(models.Model):
     title = models.CharField(max_length=100)
     weight = models.FloatField()
     price = models.DecimalField(max_digits=6, decimal_places=0)
     description = models.TextField()
-    # с фото продукта пока хз как делать
-    # image = models.ImageField(upload_to='products/')
+    image = models.ImageField(upload_to='product_images/')
 
     # можно сделать many-to-many категории
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -67,7 +43,7 @@ class Product(models.Model):
 
 class Order(models.Model):
     # пока оплата будет происходить не в нашем сервисе, оставим такое поведение при удалении
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(Customer, on_delete=models.PROTECT)
     # можно сделать возможность делить заказ на разные магазины
     store = models.ForeignKey(Store, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
@@ -77,7 +53,7 @@ class Order(models.Model):
     delivery_date = models.DateField()
 
     def __str__(self):
-        return f"Order {self.id} by {self.user.name}"
+        return f"Order {self.id} by {self.user.id}"
 
 
 class OrderItem(models.Model):
